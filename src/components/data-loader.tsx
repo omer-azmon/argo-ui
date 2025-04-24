@@ -1,7 +1,9 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { Observable, Subscription } from 'rxjs';
+
 import { AppContext } from '../context';
+
 import { ErrorNotification } from './error-notification';
 import { NotificationType } from './notifications/notifications';
 import { isPromise } from './utils';
@@ -31,13 +33,13 @@ interface LoaderState<TInput, TResult> {
   inputChanged: boolean;
 }
 
-export class DataLoader<D = any, I = undefined> extends React.Component<LoaderProps<I, D> | LoaderPropsNoInput<D>, LoaderState<I, D>> {
+export class DataLoader<D, I = undefined> extends React.Component<LoaderProps<I, D> | LoaderPropsNoInput<D>, LoaderState<I, D>> {
     public static contextTypes = {
-        router: PropTypes.object,
-        apis: PropTypes.object,
+        router: PropTypes.object as PropTypes.Validator<unknown>,
+        apis: PropTypes.object as PropTypes.Validator<AppContext['apis']>,
     };
 
-    public static getDerivedStateFromProps(nextProps: LoaderProps<any, any>, prevState: { input: any }) {
+    public static getDerivedStateFromProps<I>(nextProps: LoaderProps<I, unknown>, prevState: { input: I }) {
         if (JSON.stringify(nextProps.input) !== JSON.stringify(prevState.input)) {
             return { inputChanged: true, input: nextProps.input };
         }
@@ -47,9 +49,10 @@ export class DataLoader<D = any, I = undefined> extends React.Component<LoaderPr
     private subscription: Subscription | null = null;
     private unmounted = false;
 
-    constructor(props: LoaderProps<I, D>) {
+    constructor(props: LoaderProps<I, D> | LoaderPropsNoInput<D>) {
         super(props);
-        this.state = { loading: false, error: false, dataWrapper: null, input: props.input, inputChanged: false };
+        const input = 'input' in props ? props.input : undefined;
+        this.state = { loading: false, error: false, dataWrapper: null, input, inputChanged: false };
     }
 
     public getData() {
@@ -123,7 +126,7 @@ export class DataLoader<D = any, I = undefined> extends React.Component<LoaderPr
         }
     }
 
-    private handleError(e: any) {
+    private handleError(e: Error & { status?: number }) {
         if (!this.unmounted) {
             this.setState({ error: true, loading: false, inputChanged: false });
             if (e.status !== 401) {

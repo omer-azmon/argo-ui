@@ -1,5 +1,7 @@
 import * as React from 'react';
+
 import Text from '../text/text';
+
 import {EffectDiv} from './effect-div';
 
 export default {

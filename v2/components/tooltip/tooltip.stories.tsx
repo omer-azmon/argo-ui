@@ -1,5 +1,7 @@
 import * as React from 'react';
+
 import Text from '../text/text';
+
 import {Tooltip} from './tooltip';
 
 export default {

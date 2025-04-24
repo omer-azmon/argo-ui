@@ -1,10 +1,10 @@
 import {default as classNames} from 'classnames';
 import * as React from 'react';
 import * as ReactForm from 'react-form';
+import { v1 as uuid } from 'uuid';
 
 import { Select as ArgoSelect, SelectOption, SelectProps } from '../select/select';
 
-import { v1 as uuid } from 'uuid';
 
 require('./form-field.scss');
 

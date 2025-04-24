@@ -1,7 +1,9 @@
 import * as React from 'react';
+
 import ActionButton from '../action-button/action-button';
 import {Flexy} from '../flexy/flexy';
 import Text from '../text/text';
+
 import {Theme, ThemeDiv} from './theme-div';
 
 export default {

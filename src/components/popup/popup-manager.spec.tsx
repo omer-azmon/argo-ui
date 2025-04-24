@@ -1,6 +1,7 @@
 import { mount } from 'enzyme';
 import {from} from 'rxjs';
 import {TestScheduler} from 'rxjs/testing';
+
 import { Popup, PopupProps } from './popup';
 import {PopupManager} from './popup-manager';
 

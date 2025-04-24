@@ -5,27 +5,28 @@ export interface Error {
     retry: () => void;
 }
 
-export function useData<T>(getData: () => Promise<T>, init?: T, callback?: (data: T) => void, dependencies?: any[]): [T, boolean, Error] {
+export function useData<T>(getData: () => Promise<T>, init?: T, callback?: (data: T) => void, dependencies: unknown[] = []): [T, boolean, Error] {
     const [data, setData] = React.useState(init as T);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState(false);
     const [retrying, retry] = React.useState(false);
-    React.useEffect(() => {
-        const fx = async () => {
-            try {
-                setLoading(true);
-                const intData = await getData();
-                setLoading(false);
-                setData(intData);
-                if (callback) {
-                    callback(intData);
-                }
-            } catch (e) {
-                setError(e);
+    const fetchData = React.useCallback(async () => {
+        try {
+            setLoading(true);
+            const intData = await getData();
+            setLoading(false);
+            setData(intData);
+            if (callback) {
+                callback(intData);
             }
-        };
-        fx();
-    }, [...(dependencies || []), retrying]);
+        } catch (e) {
+            setError(e);
+        }
+    }, [getData, callback]);
+
+    React.useEffect(() => {
+        fetchData();
+    }, [...dependencies, retrying]);
     return [data as T, loading, {state: error, retry: () => retry(!retrying)} as Error];
 }
 
@@ -41,10 +42,11 @@ export const appendSuffixToClasses = (classNames: string, suffix: string): strin
     return suffixed.join(' ');
 };
 
-export const useClickOutside = (ref: any, callback: () => void) => {
+export const useClickOutside = (ref: React.RefObject<HTMLElement>, callback: () => void) => {
     React.useEffect(() => {
-        const handler = (e: any) => {
-            if (ref.current && !ref.current.contains(e.target)) {
+        const handler = (e: MouseEvent) => {
+            const target = e.target as Node;
+            if (ref.current && !ref.current.contains(target)) {
                 callback();
             }
         };
@@ -54,28 +56,36 @@ export const useClickOutside = (ref: any, callback: () => void) => {
     }, [ref, callback]);
 };
 
-export const useWidth = (ref: any): number => {
+export const useWidth = (ref: React.RefObject<HTMLElement>): number => {
     const [width, setWidth] = React.useState(0);
     React.useEffect(() => {
-        setWidth(ref.current ? ref.current.offsetWidth : 0);
+        const updateWidth = () => setWidth(ref.current ? ref.current.offsetWidth : 0);
+        updateWidth();
+        window.addEventListener('resize', updateWidth);
+        return () => window.removeEventListener('resize', updateWidth);
     }, [ref]);
     return width;
 };
 
-export const useTimeout = (fx: () => void, timeoutMs: number, dependencies: any[]) => {
+export const useTimeout = (fx: () => void, timeoutMs: number, dependencies: React.DependencyList = []) => {
+    const savedCallback = React.useRef(fx);
+
     React.useEffect(() => {
-        const to = setTimeout(fx, timeoutMs);
-        return () => clearInterval(to);
-    }, dependencies);
+        savedCallback.current = fx;
+    }, [fx]);
+
+    React.useEffect(() => {
+        const to = setTimeout(() => savedCallback.current(), timeoutMs);
+        return () => clearTimeout(to);
+    }, [timeoutMs, ...dependencies]);
 };
 
-export const debounce = (fxn: () => any, ms: number) => {
-    let timer: any;
-    return () => {
+export const debounce = <T extends (...args: Parameters<T>) => ReturnType<T>>(fxn: T, ms: number) => {
+    let timer: ReturnType<typeof setTimeout>;
+    return (...args: Parameters<T>) => {
         clearTimeout(timer);
         timer = setTimeout(() => {
-            timer = null;
-            fxn.apply(this);
+            fxn(...args);
         }, ms);
     };
 };

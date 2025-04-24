@@ -3,9 +3,28 @@ import {CSSProperties, ReactNode} from 'react';
 import * as React from 'react';
 import ReactAutocomplete from 'react-autocomplete';
 
+type AutocompleteState = ReactAutocomplete['state'] & {
+    menuTop?: number;
+    menuLeft?: number;
+    menuWidth?: number;
+};
+
+interface AutocompleteInstance {
+    props: ReactAutocomplete['props'];
+    state: AutocompleteState;
+    refs: {
+        input: HTMLInputElement;
+        menu: HTMLElement;
+    };
+    setState(state: Partial<AutocompleteState>): void;
+    setMenuPositions(): void;
+    setMenuPositionsOverridden?: boolean;
+    menuStyle?: React.CSSProperties;
+}
+
 require('./autocomplete.scss');
 export interface AutocompleteApi {
-    refresh(): any;
+    refresh(): void;
 }
 
 export interface AutocompleteOption {
@@ -21,8 +40,8 @@ export interface AutocompleteProps {
     renderInput?: (props: React.HTMLProps<HTMLInputElement>) => React.ReactNode;
     renderItem?: (item: AutocompleteOption) => React.ReactNode;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>, value: string) => void;
-    onSelect?: (value: string, item: any) => void;
-    autoCompleteRef?: (api: AutocompleteApi) => any;
+    onSelect?: (value: string, item: AutocompleteOption) => void;
+    autoCompleteRef?: (api: AutocompleteApi) => void;
     filterSuggestions?: boolean;
     qeid?: string;
     /** @default true */ // per https://github.com/reactjs/react-autocomplete/blob/41388f7d7760bf6cf38e7946e43d4fddd9c7c176/lib/Autocomplete.js#L188
@@ -40,12 +59,12 @@ export const Autocomplete = (props: AutocompleteProps) => {
             };
         }
     });
-    const [autocompleteEl, setAutocompleteEl] = React.useState(null);
+    const [autocompleteEl, setAutocompleteEl] = React.useState<AutocompleteInstance | null>(null);
 
     React.useEffect(() => {
-        const listener = (event: any) => {
+        const listener = (event: Event) => {
             // Recalculate menu position on scroll
-            if (autocompleteEl && autocompleteEl.refs.input && autocompleteEl.refs.menu && !(event.target === autocompleteEl.refs.menu)) {
+            if (autocompleteEl?.refs.input && autocompleteEl.refs.menu && event.target !== autocompleteEl.refs.menu) {
                 autocompleteEl.setMenuPositions();
             }
         };
@@ -60,31 +79,32 @@ export const Autocomplete = (props: AutocompleteProps) => {
     return (
         <ReactAutocomplete
             autoHighlight={props.autoHighlight}
-            ref={(el: any) => {
-                if (el) {
-                    if (el.refs.input) {
+            ref={(el) => {
+                const instance = el as unknown as AutocompleteInstance;
+                if (instance) {
+                    if (instance.refs.input) {
                         // workaround for 'autofill for forms not deactivatable' https://bugs.chromium.org/p/chromium/issues/detail?id=370363#c7
-                        (el.refs.input as HTMLInputElement).autocomplete = 'no-autocomplete';
+                        instance.refs.input.setAttribute('autocomplete', 'off');
                     }
-                    if (!el.setMenuPositionsOverridden) {
-                        el.setMenuPositionsOverridden = true;
-                        el.setMenuPositions = () => {
+                    if (!instance.setMenuPositionsOverridden) {
+                        instance.setMenuPositionsOverridden = true;
+                        instance.setMenuPositions = () => {
                             // Overridden setMenuPositions implementation: expands menu to the top if there is not enough space below the input but enough above it.
-                            if (el.refs.menu && el.refs.input) {
-                                const node = el.refs.input;
+                            if (instance.refs.menu && instance.refs.input) {
+                                const node = instance.refs.input;
                                 const rect = node.getBoundingClientRect();
                                 const computedStyle = window.getComputedStyle(node);
                                 const marginBottom = parseInt(computedStyle.marginBottom, 10) || 0;
                                 const marginLeft = parseInt(computedStyle.marginLeft, 10) || 0;
                                 const marginRight = parseInt(computedStyle.marginRight, 10) || 0;
                                 let menuTop = rect.bottom + marginBottom;
-                                if (window.innerHeight - (menuTop + el.refs.menu.offsetHeight) < 0) {
-                                    const correctedTop = menuTop - el.refs.menu.offsetHeight - el.refs.input.offsetHeight;
+                                if (window.innerHeight - (menuTop + instance.refs.menu.offsetHeight) < 0) {
+                                    const correctedTop = menuTop - instance.refs.menu.offsetHeight - instance.refs.input.offsetHeight;
                                     if (correctedTop > 0) {
                                         menuTop = correctedTop;
                                     }
                                 }
-                                el.setState({
+                                instance.setState({
                                     menuTop,
                                     menuLeft: rect.left + marginLeft,
                                     menuWidth: rect.width + marginLeft + marginRight,
@@ -93,12 +113,12 @@ export const Autocomplete = (props: AutocompleteProps) => {
                         };
                     }
                 }
-                setAutocompleteEl(el);
+                setAutocompleteEl(instance);
                 if (props.autoCompleteRef) {
                     props.autoCompleteRef({
                         refresh: () => {
-                            if (el && el.refs.input) {
-                                el.setMenuPositions();
+                            if (instance && instance.refs.input) {
+                                instance.setMenuPositions();
                             }
                         },
                     });
@@ -115,10 +135,10 @@ export const Autocomplete = (props: AutocompleteProps) => {
                 }
                 return <div style={{...style, ...this.menuStyle, background: 'white', zIndex: 20, maxHeight: '20em'}}>{menuItems}</div>;
             }}
-            getItemValue={(item: any) => item.label}
+            getItemValue={(item: AutocompleteOption) => item.label}
             items={items}
             value={props.value}
-            renderItem={(item: any, isSelected: boolean) => (
+            renderItem={(item: AutocompleteOption, isSelected: boolean) => (
                 <div className={classNames('select__option', {selected: isSelected})} key={item.label}>
                     {(props.renderItem && props.renderItem(item)) || item.label}
                 </div>

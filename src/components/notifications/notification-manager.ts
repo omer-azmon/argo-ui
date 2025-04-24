@@ -1,4 +1,5 @@
 import { ReplaySubject } from 'rxjs';
+
 import { NotificationInfo } from './notifications';
 
 export interface NotificationsApi {

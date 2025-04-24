@@ -1,4 +1,5 @@
 import * as React from 'react';
+
 import Text from '../text/text';
 import {ThemeDiv} from '../theme-div/theme-div';
 import {Tooltip} from '../tooltip/tooltip';

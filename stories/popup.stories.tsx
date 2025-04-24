@@ -1,10 +1,10 @@
 import { action } from '@storybook/addon-actions';
 import * as React from 'react';
-import { Checkbox as ReactCheckbox } from 'react-form';
-import { Text } from 'react-form';
+import { Checkbox as ReactCheckbox , Text } from 'react-form';
 
 import { Checkbox } from '../src/components/checkbox';
 import { FormField } from '../src/components/form-field/form-field';
+
 import { App } from './utils';
 
 export default {

@@ -1,10 +1,11 @@
 import * as React from 'react';
+
 import { DropDown } from './dropdown/dropdown';
 
 export interface MenuItem {
     title: string | React.ReactElement;
     iconClassName?: string;
-    action: () => any;
+    action: () => void;
 }
 
 export interface DropDownMenuProps {
@@ -19,7 +20,7 @@ export class DropDownMenu extends React.PureComponent<DropDownMenuProps> {
 
     public render() {
         return (
-            <DropDown anchor={this.props.anchor} isMenu={true} ref={(dropdown: any) => this.dropdown = dropdown} qeId={this.props.qeId}>
+            <DropDown anchor={this.props.anchor} isMenu={true} ref={(dropdown: DropDown | null) => dropdown && (this.dropdown = dropdown)} qeId={this.props.qeId}>
                 <ul>
                     {this.props.items.map((item, i) => <li qe-id={this.props.qeId + `-` + item.title}
                         onClick={(event) => this.onItemClick(item, event)} key={i}>
@@ -30,7 +31,7 @@ export class DropDownMenu extends React.PureComponent<DropDownMenuProps> {
         );
     }
 
-    private onItemClick(item: MenuItem, event: any) {
+    private onItemClick(item: MenuItem, event: React.MouseEvent) {
         item.action();
         event.stopPropagation();
         if (this.dropdown) {

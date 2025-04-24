@@ -1,4 +1,5 @@
 import * as React from 'react';
+
 import {ThemeDiv} from '../theme-div/theme-div';
 
 import './tooltip.scss';

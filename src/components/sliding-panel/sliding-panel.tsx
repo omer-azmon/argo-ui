@@ -1,5 +1,6 @@
 import {default as classNames} from 'classnames';
 import * as React from 'react';
+
 import { Key, KeybindingContext, KeybindingProvider } from '../../../v2';
 
 export interface SlidingPanelProps extends React.Props<any> {

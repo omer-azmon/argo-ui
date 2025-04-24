@@ -1,4 +1,5 @@
 import * as React from 'react';
+
 import {InfoItem} from './info-item';
 
 export default {

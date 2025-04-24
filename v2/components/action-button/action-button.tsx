@@ -1,10 +1,11 @@
 import * as React from 'react';
+
 import {Key, useKeyListener} from '../../shared';
 import {useClickOutside, useTimeout} from '../../utils/utils';
 import {EffectDiv} from '../effect-div/effect-div';
+import {Theme} from '../theme-div/theme-div';
 import {Tooltip} from '../tooltip/tooltip';
 
-import {Theme} from '../theme-div/theme-div';
 import './action-button.scss';
 
 export interface ActionButtonProps {

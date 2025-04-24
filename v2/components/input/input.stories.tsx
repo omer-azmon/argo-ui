@@ -1,5 +1,7 @@
 import * as React from 'react';
+
 import Text from '../text/text';
+
 import {Input, useInput} from './input';
 
 export default {

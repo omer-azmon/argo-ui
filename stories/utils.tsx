@@ -1,8 +1,8 @@
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 
-import { Notifications } from '../src/components/notifications/notifications';
 import { NotificationsApi, NotificationsManager } from '../src/components/notifications/notification-manager';
+import { Notifications } from '../src/components/notifications/notifications';
 import { Popup, PopupProps } from '../src/components/popup/popup';
 import { PopupApi, PopupManager } from '../src/components/popup/popup-manager';
 

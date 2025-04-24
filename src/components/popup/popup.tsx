@@ -13,7 +13,7 @@ export type PopupPropsWithChildren = BasePopupProps & { children: React.ReactNod
 export type PopupProps = PopupPropsWithContent | PopupPropsWithChildren;
 
 function isPopupWithChildren(value: PopupProps): value is PopupPropsWithChildren {
-    return (value as any).children !== undefined;
+    return 'children' in value;
 }
 
 require('./popup.scss');
