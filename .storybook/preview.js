@@ -1,1 +1,14 @@
-// import '../src/styles/main.scss'; -- this seems to not work and also makes the Storybook freeze for multiple minutes 😕
+/** @type { import('@storybook/react').Preview } */
+const preview = {
+  parameters: {
+    actions: { argTypesRegex: '^on[A-Z].*' },
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/i,
+      },
+    },
+  },
+};
+
+export default preview;
